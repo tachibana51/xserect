@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Tesseract API 初期化
+  // init Tesseract API
   if (api->Init(NULL, args.lang.c_str())) {
      cerr << "Could not initialize tesseract with language: " << args.lang << endl;
     return 1;
