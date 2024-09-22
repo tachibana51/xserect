@@ -1,0 +1,2 @@
+#!/bin/bash
+xerect eng 2>/dev/null | perl -pe 's/\n//g' #| xclip -selection clipboard
