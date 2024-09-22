@@ -1,5 +1,5 @@
 # xserect
-fast screen shot ocr for x system.  
+Fast screen shot OCR util with tesseract APIs for X Window System.  
 It's just for myself, now.
 # TODO
 - [ ] manage args
