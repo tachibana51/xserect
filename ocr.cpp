@@ -26,8 +26,16 @@ struct BMPInfoHeader {
 };
 #pragma pack()
 
+unsigned char AdjustContrast(unsigned char value, float contrastFactor) {
+  float newValue = (((float)value / 255.0f - 0.5f) * contrastFactor + 0.5f) * 255.0f;
+  if (newValue < 0.0f) newValue = 0.0f;
+  if (newValue > 255.0f) newValue = 255.0f;
+  return static_cast<unsigned char>(newValue);
+}
+
+
 void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
-                  std::vector<unsigned char> &bmpData) {
+                  std::vector<unsigned char> &bmpData, float contrastFactor) {
   int paddingSize = (4 - (width * 3) % 4) % 4;
 
   BMPFileHeader fileHeader;
@@ -62,15 +70,30 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
       size_t bmpIndex = sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) +
                         (x * 3 + y * (width * 3 + paddingSize));
       size_t dataIndex = (x + (height - 1 - y) * width) * 3;
-      bmpData[bmpIndex] = data[dataIndex + 2];
-      bmpData[bmpIndex + 1] = data[dataIndex + 1];
-      bmpData[bmpIndex + 2] = data[dataIndex];
+
+      // グレースケール化（RGB値から明度を算出）
+      unsigned char gray = static_cast<unsigned char>(
+          0.299f * data[dataIndex + 2] + 
+          0.587f * data[dataIndex + 1] + 
+          0.114f * data[dataIndex]);
+
+      // コントラストを上げる処理
+      gray = AdjustContrast(gray, contrastFactor);
+
+      // グレースケール値をRGBにコピー
+      bmpData[bmpIndex] = gray;      // B
+      bmpData[bmpIndex + 1] = gray;  // G
+      bmpData[bmpIndex + 2] = gray;  // R
     }
+
+    // パディング部分の処理
     std::memset(bmpData.data() + sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) +
                     width * 3 + y * (width * 3 + paddingSize),
                 0, paddingSize);
   }
 }
+
+
 
 int main(int argc, char *argv[]) {
   char *outText;
@@ -93,7 +116,7 @@ int main(int argc, char *argv[]) {
 
   // Open input image with leptonica library
   RetData glb_data = doGlabScreen();
-  ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData);
+  ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData, 2.0);
   free(glb_data.data);
   Pix *image = pixReadMemBmp(bmpData.data(), bmpData.size());
 
