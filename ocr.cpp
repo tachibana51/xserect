@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
   std::vector<unsigned char> bmpData;
   tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
 
+  //TODO take care args
   if (argc > 1) {
     if (api->Init(NULL, argv[1])) {
       fprintf(stderr, "Could not initialize tesseract.\n");
