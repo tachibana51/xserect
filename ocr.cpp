@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
 
   // Open input image with leptonica library
   RetData glb_data = doGlabScreen();
-  ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData, 2.0);
+  ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData, 1.6);
   free(glb_data.data);
   Pix *image = pixReadMemBmp(bmpData.data(), bmpData.size());
 
