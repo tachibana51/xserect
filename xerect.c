@@ -31,7 +31,7 @@ struct RetData {
   unsigned char *data;
   size_t size;
   unsigned int w; /* width */
-  unsigned int h; /* width */
+  unsigned int h; /* height */
 };
 
 static void getScreen(Display *ptr_display, Window *ptr_root, const int xx,
@@ -109,7 +109,7 @@ void getScreen(Display *ptr_display, Window *ptr_root, const int xx,
 static void error(const char *errstr, ...) {
   va_list ap;
 
-  fprintf(stderr, "serect: ");
+  fprintf(stderr, "xserect: ");
   va_start(ap, errstr);
   vfprintf(stderr, errstr, ap);
   va_end(ap);
@@ -221,7 +221,6 @@ static int select_region(Display *display, Window root, SelectRegion *region,
   /* calculate right and bottom offset */
   selected_region.X = rr.w - selected_region.x - selected_region.w;
   selected_region.Y = rr.h - selected_region.y - selected_region.h;
-  /* those doesn't really make sense but should be set */
   selected_region.b = rr.b;
   selected_region.d = rr.d;
   *region = selected_region;
