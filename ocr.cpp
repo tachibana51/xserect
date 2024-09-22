@@ -71,22 +71,20 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
                         (x * 3 + y * (width * 3 + paddingSize));
       size_t dataIndex = (x + (height - 1 - y) * width) * 3;
 
-      // グレースケール化（RGB値から明度を算出）
+      // gray scaled param 
       unsigned char gray = static_cast<unsigned char>(
           0.299f * data[dataIndex + 2] + 
           0.587f * data[dataIndex + 1] + 
           0.114f * data[dataIndex]);
 
-      // コントラストを上げる処理
       gray = AdjustContrast(gray, contrastFactor);
 
-      // グレースケール値をRGBにコピー
       bmpData[bmpIndex] = gray;      // B
       bmpData[bmpIndex + 1] = gray;  // G
       bmpData[bmpIndex + 2] = gray;  // R
     }
 
-    // パディング部分の処理
+    // padding
     std::memset(bmpData.data() + sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) +
                     width * 3 + y * (width * 3 + paddingSize),
                 0, paddingSize);
@@ -114,18 +112,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // Open input image with leptonica library
+  // open input image with leptonica library
   RetData glb_data = doGlabScreen();
   ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData, 1.6);
   free(glb_data.data);
   Pix *image = pixReadMemBmp(bmpData.data(), bmpData.size());
 
   api->SetImage(image);
-  // Get OCR result
+  // get OCR result
   outText = api->GetUTF8Text();
   printf("%s", outText);
 
-  // Destroy used object and release memory
+  // destroy used object and release memory
   api->End();
   delete api;
   delete[] outText;
