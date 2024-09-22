@@ -1,9 +1,8 @@
-#include "xerect.h"
 #include <leptonica/allheaders.h>
 #include <tesseract/baseapi.h>
-#include <cstring>
 #include <iostream>
-
+using namespace std;
+#include "xerect.h"
 #pragma pack(1)
 struct BMPFileHeader {
   uint16_t bfType;
@@ -37,7 +36,7 @@ unsigned char AdjustContrast(unsigned char value, float contrastFactor) {
 
 
 void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
-                  std::vector<unsigned char> &bmpData, float contrastFactor) {
+                  vector<unsigned char> &bmpData, float contrastFactor) {
   int paddingSize = (4 - (width * 3) % 4) % 4;
 
   BMPFileHeader fileHeader;
@@ -63,8 +62,8 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
 
   bmpData.resize(fileHeader.bfSize);
 
-  std::memcpy(bmpData.data(), &fileHeader, sizeof(BMPFileHeader));
-  std::memcpy(bmpData.data() + sizeof(BMPFileHeader), &infoHeader,
+  memcpy(bmpData.data(), &fileHeader, sizeof(BMPFileHeader));
+  memcpy(bmpData.data() + sizeof(BMPFileHeader), &infoHeader,
               sizeof(BMPInfoHeader));
 
   for (int y = 0; y < height; ++y) {
@@ -87,7 +86,7 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
     }
 
     // padding
-    std::memset(bmpData.data() + sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) +
+    memset(bmpData.data() + sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) +
                     width * 3 + y * (width * 3 + paddingSize),
                 0, paddingSize);
   }
@@ -95,7 +94,7 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
 
 
 struct ProgramArgs {
-  std::string lang;       // Tesseractの言語設定
+  string lang;       // Tesseractの言語設定
   float contrastFactor;    // コントラスト調整の係数
 };
 
@@ -110,10 +109,10 @@ bool ParseArguments(int argc, char *argv[], ProgramArgs &args) {
       args.lang = argv[i + 1]; 
       i++;  // skip next
     } else if (strcmp(argv[i], "--contrast") == 0 && i + 1 < argc) {
-      args.contrastFactor = std::stof(argv[i + 1]);
+      args.contrastFactor = stof(argv[i + 1]);
       i++;  // skip next
     } else {
-      std::cerr << "Unknown argument: " << argv[i] << std::endl;
+      cerr << "Unknown argument: " << argv[i] << endl;
       return false;  // error
     }
   }
@@ -123,32 +122,32 @@ bool ParseArguments(int argc, char *argv[], ProgramArgs &args) {
 
 int main(int argc, char *argv[]) {
   char *outText;
-  std::vector<unsigned char> bmpData;
+  vector<unsigned char> bmpData;
   tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
   ProgramArgs args;
   // parse args
   if (!ParseArguments(argc, argv, args)) {
-    std::cerr << "Usage: " << argv[0] << " [--lang <language>] [--contrast <factor>]" << std::endl;
+    cerr << "Usage: " << argv[0] << " [--lang <language>] [--contrast <factor>]" << endl;
     return 1;
   }
 
   // Tesseract API 初期化
   if (api->Init(NULL, args.lang.c_str())) {
-    fprintf(stderr, "Could not initialize tesseract with language: %s\n", args.lang.c_str());
+     cerr << "Could not initialize tesseract with language: " << args.lang << endl;
     return 1;
   }
 
 
   // open input image with leptonica library
   RetData glb_data = doGlabScreen();
-  ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData, 1.6);
+  ConvertToBMP(glb_data.data, glb_data.size, glb_data.w, glb_data.h, bmpData, args.contrastFactor);
   free(glb_data.data);
   Pix *image = pixReadMemBmp(bmpData.data(), bmpData.size());
 
   api->SetImage(image);
   // get OCR result
   outText = api->GetUTF8Text();
-  std::cout<< outText;
+  cout<< outText;
 
   // destroy used object and release memory
   api->End();
