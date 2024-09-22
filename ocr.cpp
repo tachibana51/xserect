@@ -1,6 +1,8 @@
 #include "xerect.h"
 #include <leptonica/allheaders.h>
 #include <tesseract/baseapi.h>
+#include <cstring>
+#include <iostream>
 
 #pragma pack(1)
 struct BMPFileHeader {
@@ -92,25 +94,50 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
 }
 
 
+struct ProgramArgs {
+  std::string lang;       // Tesseractの言語設定
+  float contrastFactor;    // コントラスト調整の係数
+};
+
+bool ParseArguments(int argc, char *argv[], ProgramArgs &args) {
+  // default value
+  args.lang = "jpn";
+  args.contrastFactor = 1.6f;
+
+  // parse
+  for (int i = 1; i < argc; ++i) {
+    if (strcmp(argv[i], "--lang") == 0 && i + 1 < argc) {
+      args.lang = argv[i + 1]; 
+      i++;  // skip next
+    } else if (strcmp(argv[i], "--contrast") == 0 && i + 1 < argc) {
+      args.contrastFactor = std::stof(argv[i + 1]);
+      i++;  // skip next
+    } else {
+      std::cerr << "Unknown argument: " << argv[i] << std::endl;
+      return false;  // error
+    }
+  }
+  return true;
+}
+
 
 int main(int argc, char *argv[]) {
   char *outText;
   std::vector<unsigned char> bmpData;
   tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
-
-  //TODO take care args
-  if (argc > 1) {
-    if (api->Init(NULL, argv[1])) {
-      fprintf(stderr, "Could not initialize tesseract.\n");
-      exit(1);
-    }
-  } else {
-    // fallback
-    if (api->Init(NULL, "jpn")) {
-      fprintf(stderr, "Could not initialize tesseract.\n");
-      exit(1);
-    }
+  ProgramArgs args;
+  // parse args
+  if (!ParseArguments(argc, argv, args)) {
+    std::cerr << "Usage: " << argv[0] << " [--lang <language>] [--contrast <factor>]" << std::endl;
+    return 1;
   }
+
+  // Tesseract API 初期化
+  if (api->Init(NULL, args.lang.c_str())) {
+    fprintf(stderr, "Could not initialize tesseract with language: %s\n", args.lang.c_str());
+    return 1;
+  }
+
 
   // open input image with leptonica library
   RetData glb_data = doGlabScreen();
@@ -121,7 +148,7 @@ int main(int argc, char *argv[]) {
   api->SetImage(image);
   // get OCR result
   outText = api->GetUTF8Text();
-  printf("%s", outText);
+  std::cout<< outText;
 
   // destroy used object and release memory
   api->End();
