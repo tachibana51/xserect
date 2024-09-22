@@ -2,6 +2,6 @@
 Fast screen shot OCR util with tesseract APIs for X Window System.  
 It's just for myself, now.
 # TODO
-- [ ] manage args
+- [x] manage args
 - [ ] update docs
 - [ ] font detection
