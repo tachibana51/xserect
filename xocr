@@ -1,2 +1,2 @@
 #!/bin/bash
-xerect ja 2>/dev/null | perl -pe 's/\n//g' | xclip -selection clipboard
+xerect jpn 2>/dev/null | perl -pe 's/\n//g' | xclip -selection clipboard
