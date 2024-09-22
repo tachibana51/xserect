@@ -94,8 +94,8 @@ void ConvertToBMP(const unsigned char *data, size_t size, int width, int height,
 
 
 struct ProgramArgs {
-  string lang;       // Tesseractの言語設定
-  float contrastFactor;    // コントラスト調整の係数
+  string lang;       // For Tesseract API
+  float contrastFactor; 
 };
 
 bool ParseArguments(int argc, char *argv[], ProgramArgs &args) {
